@@ -1,0 +1,3 @@
+C:/Users/JiaYing/Group Project/Rubus_argutus/Hillquist_genome_v1_purged_primary_contigs_HiC.fasta.gz
+C:/Users/JiaYing/Group Project/FASTA/Rubus_occ_V3_10-12-17.fasta.gz
+C:/Users/JiaYing/Group Project/FASTA/Rubus_chingii_Hu_fina.fa.gz
