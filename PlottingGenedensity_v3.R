@@ -10,79 +10,65 @@ args = commandArgs(trailingOnly = TRUE)
 # argument 3 = output file path
 # argument 4 = window size
 # argument 5 = no. of chromosomes
-gfffile <- args[1]
-fastafile <- args[2]
+gffpaths <- args[1]
+#gffpaths <- "C:\\Users\\JiaYing\\GP\\gfffiles.txt"
+fastapaths <- args[2]
+#fastapaths <- "C:\\Users\\JiaYing\\GP\\fastafiles.txt"
 outputfile <- args[3]
 window <- as.numeric(args[4])
 noc <- as.numeric(args[5])
-
-# install.packages("ape")
-# install.packages("stringr")
-# install.packages("RColorBrewer")
-# install.packages("seqinr")
-# require(ape)
-# require(stringr)
-# require(RColorBrewer)
-# require(seqinr)
 
 # List of packages for session
 .packages = c("ape", "stringr", "RColorBrewer", "seqinr")
 
 # Install CRAN packages (if not already installed)
 .inst <- .packages %in% installed.packages()
-if(length(.packages[!.inst]) > 0) install.packages(.packages[!.inst])
+if (length(.packages[!.inst]) > 0)
+  install.packages(.packages[!.inst])
 
-# Load packages into session 
-lapply(.packages, require, character.only=TRUE)
+# Load packages into session
+lapply(.packages, require, character.only = TRUE)
 
 # For plot later
 cols <- brewer.pal(9, 'Set1')
+
+# Read gfffile.txt
+readGFF = function(filepath) {
+  gfffiles <- c()
+  con = file(filepath, "r")
+  while (TRUE) {
+    gfffile = readLines(con, n = 1)
+    if (length(gfffile) == 0) {
+      break
+    }
+    gfffiles <- append(gfffiles, gfffile)
+  }
+  return(gfffiles)
+  close(con)
+}
+
+readFASTA = function(filepath) {
+  fastafiles <- c()
+  con = file(filepath, "r")
+  while (TRUE) {
+    fastafile = readLines(con, n = 1)
+    if (length(fastafile) == 0) {
+      break
+    }
+    fastafiles <- append(fastafiles, fastafile)
+  }
+  return(fastafiles)
+  close(con)
+}
+
+gfffiles <- readGFF(gffpaths)
+fastafiles <- readFASTA(fastapaths)
+
 legend <- c()
-
-# Vector of file paths
-gfffiles <- c() ## first index = query, second index = ref
-# 
-# gfffile <-
-#   "C:/Users/JiaYing/Group Project/GFF/Ridaeus_Ras1_v1.genes.gff3"
-legend <- append(legend, tail(str_split(gfffile, "/")[[1]], 1))
-gfffiles <- append(gfffiles, gfffile)
-# 
-# gfffile <-
-#   "C:/Users/JiaYing/Group Project/GFF/Hillquist_release2.gff"
-# legend <- append(legend, tail(str_split(gfffile, "/")[[1]], 1))
-# gfffiles <- append(gfffiles, gfffile)
-# 
-# gfffile <- "C:/Users/JiaYing/Group Project/GFF/Rubus_occ_V3.all.gff"
-# legend <- append(legend, tail(str_split(gfffile, "/")[[1]], 1))
-# gfffiles <- append(gfffiles, gfffile)
-# 
-# gfffile <- "C:/Users/JiaYing/Group Project/GFF/Rubus_chingii_Hu.gff"
-# legend <- append(legend, tail(str_split(gfffile, "/")[[1]], 1))
-# gfffiles <- append(gfffiles, gfffile)
-
-# Require vector of chromosome basepair lengths
-
-# user to give number of chromosomes (noc) in genome, eg. 7
-#noc <- 7
-
-# Option 1: Load FASTA and count from FASTA
-# Read FASTA
-bplen <- c()
-fastafiles <- c() ##IMPORTANT! FIRST FILEPATH MUST BE QUERY!!
-# 
-# fastafile <-
-#   "C:/Users/JiaYing/Group Project/FASTA/Ridaeus_Ras1_v1.fasta.gz"
-fastafiles <- append(fastafiles, fastafile)
-# fastafile <-
-#   "C:/Users/JiaYing/Group Project/Rubus_argutus/Hillquist_genome_v1_purged_primary_contigs_HiC.fasta.gz"
-# fastafiles <- append(fastafiles, fastafile)
-# fastafile <-
-#   "C:/Users/JiaYing/Group Project/FASTA/Rubus_occ_V3_10-12-17.fasta.gz"
-# fastafiles <- append(fastafiles, fastafile)
-# fastafile <-
-#   "C:/Users/JiaYing/Group Project/FASTA/Rubus_chingii_Hu_fina.fa.gz"
-# fastafiles <- append(fastafiles, fastafile)
-
+for (i in 1:length(gfffiles)){
+  gfffile <- gfffiles[i]
+  legend <- append(legend, tail(str_split(gfffile, "/")[[1]], 1))
+}
 
 header_length_table <- data.frame()
 
@@ -113,24 +99,9 @@ for (a in 1:noc) {
   header_length_table2 <- rbind(header_length_table2, chrlen)
 }
 
-
-# # Option 2: User input
-# bplen <- c() ## first index = query, second index  = ref
-# bp_input <- 31454125 #Rid1
-# bplen <- append(bplen, bp_input)
-# bp_input <- 31951077 #Hillquist
-# bplen <- append(bplen, bp_input)
-# bp_input <- 34159342 #OccV3 (random number)
-# bplen <- append(bplen, bp_input)
-# bp_input <- 25609021 #Hu (random number)
-# bplen <- append(bplen, bp_input)
-
 ## remove fasta information
-#rm(fasta, file, fastafile, fastafiles, headpoints, header_length_table, chrlen, headers, lengths)
+rm(a, i, h, fasta, file, fastafiles, gfffile, gffpaths, fastapaths, headpoints, header_length_table, chrlen, headers, lengths)
 
-
-# Set window size
-#window <- 100000
 
 if (window < 1000) {
   windowlabel = paste(window, "b")
@@ -154,7 +125,8 @@ for (c in 1:noc) {
                     na.strings = c(".", "?"),
                     GFF3 = TRUE)
     # scale the references
-    scale <- as.numeric(header_length_table2[c,1]) / as.numeric(header_length_table2[c,f])
+    scale <-
+      as.numeric(header_length_table2[c, 1]) / as.numeric(header_length_table2[c, f])
     
     genes <- data.frame()
     seqid_list <- c()
@@ -221,7 +193,8 @@ for (c in 1:noc) {
     density_table <- data.frame(density)
     density_table2 <- rbind(density_table2, density_table)
   }
-  
+  mindensity <- min(density_table2)
+  maxdensity <- max(density_table2)
   densitypoints <- nrow(density_table2) / length(gfffiles)
   
   ##PLOT
@@ -229,26 +202,26 @@ for (c in 1:noc) {
   #x11()
   #barplot(density, xlab = 'Bases', ylab = 'Gene density', names.arg = ends, main = paste("Variant density across base window of", window))
   png(
-    paste(outputfile,"_genedensity_chr", c, ".png", sep = ""),
+    paste(outputfile, "_genedensity_chr", c, ".png", sep = ""),
     width = 1200,
     height = 300,
     units = "px"
   )
   plot(
-    density_table2[1:densitypoints, ],
+    density_table2[1:densitypoints,],
     type = "l",
     xlab = "",
     ylab = "",
     main = paste("Chr", c, "\n Window size:", windowlabel),
     cex.main = 1,
     cex.axis = 0.8,
-    ylim = c(0, max(density) + 5),
+    ylim = c(mindensity - 5, maxdensity + 5),
     col = cols[1]
   )
   for (i in 2:length(gfffiles)) {
     startindex <- (densitypoints * (i - 1)) + 1
     endindex <- densitypoints * i
-    lines(density_table2[startindex:endindex, ],
+    lines(density_table2[startindex:endindex,],
           col = cols[i])
   }
   legend(
@@ -260,5 +233,3 @@ for (c in 1:noc) {
   )
   dev.off()
 }
-
-
