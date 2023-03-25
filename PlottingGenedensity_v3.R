@@ -5,8 +5,8 @@ rm(list = ls())
 graphics.off()
 
 args = commandArgs(trailingOnly = TRUE)
-# argument 1 = gff file path
-# argument 2 = fasta file path
+# argument 1 = gff paths text file
+# argument 2 = fasta paths text path
 # argument 3 = output file path
 # argument 4 = window size
 # argument 5 = no. of chromosomes
