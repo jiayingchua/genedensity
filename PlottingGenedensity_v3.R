@@ -12,11 +12,17 @@ args = commandArgs(trailingOnly = TRUE)
 # argument 5 = no. of chromosomes
 gffpaths <- args[1]
 #gffpaths <- "C:\\Users\\JiaYing\\GP\\gfffiles.txt"
+#gffpaths <- "C:\\Users\\JiaYing\\OneDrive - Cranfield University\\Documents\\Group Project\\jy1\\gfffiles.txt"
 fastapaths <- args[2]
 #fastapaths <- "C:\\Users\\JiaYing\\GP\\fastafiles.txt"
+#fastapaths <- "C:\\Users\\JiaYing\\OneDrive - Cranfield University\\Documents\\Group Project\\jy1\\fastafiles.txt"
 outputfile <- args[3]
+#outputfile <- "C:\\Users\\JiaYing\\GP\\OUT"
+#outputfile <- "C:\\Users\\JiaYing\\OneDrive - Cranfield University\\Documents\\Group Project\\jy1\\output"
 window <- as.numeric(args[4])
+#window <- 1000000
 noc <- as.numeric(args[5])
+#noc <- 2
 
 # List of packages for session
 .packages = c("ape", "stringr", "RColorBrewer", "seqinr")
@@ -47,6 +53,7 @@ readGFF = function(filepath) {
   close(con)
 }
 
+# Read fastafiles.txt
 readFASTA = function(filepath) {
   fastafiles <- c()
   con = file(filepath, "r")
@@ -64,43 +71,52 @@ readFASTA = function(filepath) {
 gfffiles <- readGFF(gffpaths)
 fastafiles <- readFASTA(fastapaths)
 
+# Set keys for legend based on name of gff file
 legend <- c()
 for (i in 1:length(gfffiles)){
   gfffile <- gfffiles[i]
-  legend <- append(legend, tail(str_split(gfffile, "/")[[1]], 1))
+  legend <- append(legend, tail(str_split(gfffile, "[^-_A-Za-z0-9.]")[[1]],1))
 }
 
-header_length_table <- data.frame()
+###
+header_length_table_v3 <- data.frame()
 
 for (file in fastafiles) {
   lengths <- c()
   headers <- c()
+  # read the fasta file
   fasta <- read.fasta(file, seqtype = 'DNA')
+  # extract lengths and headers of each sequence
   lengths <- getLength(fasta)
-  header <- gsub("[^0-9A-Za-z]", "", getAnnot(fasta))
+  header <- gsub("[^_0-9A-Za-z]", "", getAnnot(fasta))
   for (h in 1:length(header)) {
-    if (getLength(getAnnot(fasta)[h]) < 8) {
-      header_length_table <-
-        rbind(header_length_table, c(header[[h]], lengths[h]))
-    }
+    seqnumber <- gsub("[^0-9]", "", header[[h]])
+    # header length table consists of id, sequence number and length of each fastafile
+  header_length_table_v3 <-
+    rbind(header_length_table_v3, c(header[[h]], seqnumber, lengths[h]))
   }
+  
 }
+  colnames(header_length_table_v3)[1] <- "seqid"
+  colnames(header_length_table_v3) [2] <- "seqnum"
+  colnames(header_length_table_v3) [3] <- "seqlen"
 
 # Line up all chromosomes (row) of each fastafile (col)
-headpoints <- nrow(header_length_table) / length(fastafiles)
-header_length_table2 <- data.frame()
+header_length_table2_v3 <- data.frame()
 for (a in 1:noc) {
   chrlen <- c()
-  for (i in 1:nrow(header_length_table)) {
-    if (grepl(a, header_length_table[i, 1])) {
-      chrlen <- append(chrlen, header_length_table[i, 2])
+  for (i in 1:nrow(header_length_table_v3)) {
+    if (header_length_table_v3[i, 2] == a) {
+      print(i)
+      print(header_length_table_v3[i, 2])
+      chrlen <- append(chrlen, header_length_table_v3[i, 3])
     }
   }
-  header_length_table2 <- rbind(header_length_table2, chrlen)
+  header_length_table2_v3 <- rbind(header_length_table2_v3, chrlen)
 }
 
 ## remove fasta information
-rm(a, i, h, fasta, file, fastafiles, gfffile, gffpaths, fastapaths, headpoints, header_length_table, chrlen, headers, lengths)
+rm(a, i, h, fasta, file, fastafiles, gfffile, gffpaths, fastapaths, header_length_table_v3, chrlen, headers, lengths)
 
 
 if (window < 1000) {
@@ -126,7 +142,7 @@ for (c in 1:noc) {
                     GFF3 = TRUE)
     # scale the references
     scale <-
-      as.numeric(header_length_table2[c, 1]) / as.numeric(header_length_table2[c, f])
+      as.numeric(header_length_table2_v3[c, 1]) / as.numeric(header_length_table2_v3[c, f])
     
     genes <- data.frame()
     seqid_list <- c()
