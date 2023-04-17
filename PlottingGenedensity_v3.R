@@ -12,17 +12,17 @@ args = commandArgs(trailingOnly = TRUE)
 # argument 5 = no. of chromosomes
 gffpaths <- args[1]
 #gffpaths <- "C:\\Users\\JiaYing\\GP\\gfffiles.txt"
-#gffpaths <- "C:\\Users\\JiaYing\\OneDrive - Cranfield University\\Documents\\Group Project\\jy1\\gfffiles.txt"
+#gffpaths <- "C:\\Users\\JiaYing\\OneDrive - Cranfield University\\Documents\\Group Project\\jy1\\gfffiles-copy.txt"
 fastapaths <- args[2]
 #fastapaths <- "C:\\Users\\JiaYing\\GP\\fastafiles.txt"
-#fastapaths <- "C:\\Users\\JiaYing\\OneDrive - Cranfield University\\Documents\\Group Project\\jy1\\fastafiles.txt"
+#fastapaths <- "C:\\Users\\JiaYing\\OneDrive - Cranfield University\\Documents\\Group Project\\jy1\\fastafiles-copy.txt"
 outputfile <- args[3]
 #outputfile <- "C:\\Users\\JiaYing\\GP\\OUT"
 #outputfile <- "C:\\Users\\JiaYing\\OneDrive - Cranfield University\\Documents\\Group Project\\jy1\\output"
 window <- as.numeric(args[4])
 #window <- 1000000
 noc <- as.numeric(args[5])
-#noc <- 2
+#noc <- 1
 
 # List of packages for session
 .packages = c("ape", "stringr", "RColorBrewer", "seqinr")
@@ -219,19 +219,25 @@ for (c in 1:noc) {
   #barplot(density, xlab = 'Bases', ylab = 'Gene density', names.arg = ends, main = paste("Variant density across base window of", window))
   png(
     paste(outputfile, "_genedensity_chr", c, ".png", sep = ""),
-    width = 1200,
+    width = 1000,
     height = 300,
     units = "px"
   )
+  # library(ggplot2)
+  # library(grid)
+  par(mar = c(0,0,0,0))
+  # ggplot(data.frame(density_table2[1:densitypoints,]), aes(x = 1:densitypoints, y = density_table2[1:densitypoints,])) + geom_line() + theme(axis.title = element_blank()) + labs(x=NULL, y=NULL) + guides(x = "none", y="none")
+  # 
   plot(
     density_table2[1:densitypoints,],
     type = "l",
-    xlab = "",
-    ylab = "",
-    main = paste("Chr", c, "\n Window size:", windowlabel),
-    cex.main = 1,
-    cex.axis = 0.8,
-    ylim = c(mindensity - 5, maxdensity + 5),
+    axes = TRUE,
+    # xaxt = 'n', yaxt = 'n', ann = FALSE,
+    # main = paste("Chr", c, "\n Window size:", windowlabel),
+    # cex.main = 1,
+    # cex.axis = 0.8,
+    xlim = c(2,densitypoints-1),
+    ylim = c(mindensity - 5, maxdensity + 30),
     col = cols[1]
   )
   for (i in 2:length(gfffiles)) {
@@ -241,11 +247,11 @@ for (c in 1:noc) {
           col = cols[i])
   }
   legend(
-    "topright",
+    "top",
     legend = legend,
     col = cols[1:length(gfffiles)],
     lty = 1,
-    cex = 0.7
+    cex = 0.9
   )
   dev.off()
 }
