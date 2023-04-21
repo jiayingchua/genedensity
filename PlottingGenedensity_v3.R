@@ -12,15 +12,15 @@ args = commandArgs(trailingOnly = TRUE)
 # argument 5 = no. of chromosomes
 gffpaths <- args[1]
 #gffpaths <- "C:\\Users\\JiaYing\\GP\\gfffiles.txt"
-#gffpaths <- "C:\\Users\\JiaYing\\OneDrive - Cranfield University\\Documents\\Group Project\\jy1\\gfffiles-copy.txt"
+#gffpaths <- "C:\\Users\\JiaYing\\OneDrive - Cranfield University\\Documents\\Group Project\\Project2\\gfffiles.txt"
 fastapaths <- args[2]
 #fastapaths <- "C:\\Users\\JiaYing\\GP\\fastafiles.txt"
-#fastapaths <- "C:\\Users\\JiaYing\\OneDrive - Cranfield University\\Documents\\Group Project\\jy1\\fastafiles-copy.txt"
+#fastapaths <- "C:\\Users\\JiaYing\\OneDrive - Cranfield University\\Documents\\Group Project\\Project2\\fastafiles.txt"
 outputfile <- args[3]
 #outputfile <- "C:\\Users\\JiaYing\\GP\\OUT"
-#outputfile <- "C:\\Users\\JiaYing\\OneDrive - Cranfield University\\Documents\\Group Project\\jy1\\output"
+#outputfile <- "C:\\Users\\JiaYing\\OneDrive - Cranfield University\\Documents\\Group Project\\Project2\\output"
 window <- as.numeric(args[4])
-#window <- 1000000
+#window <- 100000
 noc <- as.numeric(args[5])
 #noc <- 1
 
@@ -106,7 +106,7 @@ header_length_table2_v3 <- data.frame()
 for (a in 1:noc) {
   chrlen <- c()
   for (i in 1:nrow(header_length_table_v3)) {
-    if (header_length_table_v3[i, 2] == a) {
+    if ((header_length_table_v3[i, 2] == a) || (header_length_table_v3[i, 2] == paste("0",a,sep=""))) {
       print(i)
       print(header_length_table_v3[i, 2])
       chrlen <- append(chrlen, header_length_table_v3[i, 3])
